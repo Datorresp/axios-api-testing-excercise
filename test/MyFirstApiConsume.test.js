@@ -36,5 +36,13 @@ describe('First Api Tests', () => {
           expect(response.status).to.equal(StatusCodes.OK);
           expect(JSON.parse(response.data.data)).to.eql(query);
         });
+
+    it('Consume DELETE Service ', async () => {
+
+          const response = await axios.delete('https://httpbin.org/delete');
+
+          expect(response.status).to.equal(StatusCodes.OK);
+
+    });
 });
 
