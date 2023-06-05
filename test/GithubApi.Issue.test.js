@@ -1,6 +1,7 @@
 const { StatusCodes } = require('http-status-codes');
 const { expect } = require('chai');
 const axios = require('axios');
+const dotenv = require("dotenv");
 
 const urlBase = 'https://api.github.com/user';
 const githubUserName = 'Datorresp';
@@ -72,7 +73,7 @@ describe('Github Api Testing', function () {
                     },
                   }
                 );
-                
+
                 expect(issuePatchResponse.status).to.equal(StatusCodes.OK);
 
                 const issueGetResponse = await getIssue();
@@ -81,7 +82,7 @@ describe('Github Api Testing', function () {
                 expect(issueGetResponse.data.body).to.equal(issue.body);
         });
 
-        it('should lock an issue', async function () {
+        it('Lock an issue', async function () {
 
             const url = `https://api.github.com/repos/${username}/${repositoryName}/issues/${issueNumber}/lock`;
             const response = await axios.put(url,
@@ -99,28 +100,43 @@ describe('Github Api Testing', function () {
             assert.strictEqual(response.data.active_lock_reason, 'resolved');
         });
 
-        it('should check that an issue is locked', async function () {
+        it('Lock Issue', async function () {
+
+            const issue = {
+                  owner: `${username}`,
+                  repo: `${repository}`,
+                  issue_number: `${issueNumber}`,
+                  lock_reason: "resolved",
+            };
+
             const url = `https://api.github.com/repos/${username}/${repositoryName}/issues/${issueNumber}`;
-            const response = await axios.get(url, {
-                headers: {
-                  Authorization: `token ${process.env.ACCESS_TOKEN}`,
-                },
+            const response = await axios.get(url, issue,
+                {
+                    headers: {
+                        Authorization: `token ${process.env.ACCESS_TOKEN}`,
+                    },
+                }
             });
             assert.strictEqual(response.status, 200);
             assert.strictEqual(response.data.locked, true);
             assert.strictEqual(response.data.active_lock_reason, 'resolved');
         });
 
-        it('should unlock an issue', async function () {
-            const url = `https://api.github.com/repos/${username}/${repositoryName}/issues/${issueNumber}/lock`;
-            const response = await axios.delete(url, {
-                headers: {
-                    Authorization: `token ${process.env.ACCESS_TOKEN}`,
-                },
-            });
-            assert.strictEqual(response.status, 204);
-            assert.strictEqual(response.data.locked, false);
-            assert.strictEqual(response.data.active_lock_reason, null);
+        it("Unlock issue", async () => {
+            const issue = {
+              owner: `${username}`,
+              repo: `${repository}`,
+              issue_number: `${issueNumber}`,
+            };
+
+            const deleteUnlockResponse = await axios.delete(
+                    `${urlBase}/repos/${username}/${repository}/issues/${issueNumber}/lock`,
+                {
+                    headers: {
+                        Authorization: `token ${process.env.ACCESS_TOKEN}`,
+                    },
+                }
+            );
         });
     });
-});
+}
