@@ -5,66 +5,81 @@ const axios = require('axios');
 const urlBase = 'https://api.github.com/user';
 const githubUserName = 'Datorresp';
 const repository = 'axios-api-testing-excercise';
+const issueTitle = "Como se hace esto?";
 
-describe('Github Api Test', function () {
+let issueNumber;
 
-
-    before(async function () {
-        const response = await axios.get('https://api.github.com/user', {
-
-              headers: {
+async function getIssue() {
+    return (issueGetResponse = await axios.get(`${urlBase}/repos/${githubUserName}/${repository}/issues/${issueNumber}`,
+        {
+            headers: {
                 Authorization: `token ${process.env.ACCESS_TOKEN}`,
-              },
-        });
-        accessToken = process.env.ACCESS_TOKEN;
-        assert.strictEqual(response.status, 200);
-    });
-
-    describe('Issues', function () {
-
-    let issueNumber = '';
-    let issueTitle = 'HOLA';
-    let issueBody = 'BODYHOLA';
-
-    it('Create an issue', async function () {
-
-        const url = `https://api.github.com/repos/${username}/${repositoryName}/issues`;
-        const response = await axios.post(url,
-        {
-            title: issueTitle,
-        },
-        {
-          headers: {
-            Authorization: `token ${process.env.ACCESS_TOKEN}`,
-          },
+            },
         }
-      );
+    ));
+}
 
-      assert.strictEqual(response.status, 201);
-      issueNumber = response.data.number;
-      assert.strictEqual(response.data.title, issueTitle);
-      assert.strictEqual(response.data.body, null);
+describe('Github Api Testing', function () {
+
+
+    beforeEach(() => {
+
+        dotenv.config();
     });
+
+    describe('create Issues', function () {
+
+        it("CREATE", async () => {
+
+            const issue = {
+            title: `${issueTitle}`,
+            owner: `${username}`,
+            repo: `${repository}`,
+        };
+
+        const issuePostResponse = await axios.post(
+            `${urlBase}/repos/${username}/${repository}/issues`,
+            issue,
+            {
+                headers: {
+
+                    Authorization: `token ${process.env.ACCESS_TOKEN}`,
+                },
+            }
+        );
+
+        expect(issuePostResponse.status).to.equal(StatusCodes.CREATED);
+        expect(issuePostResponse.data.title).to.equal(issue.title);
+        expect(issuePostResponse.data.body).not.exist;
+        issueNumber = issuePostResponse.data.number;
+        });
 
         it('Update an issue', async function () {
 
-            const url = `https://api.github.com/repos/${username}/${repositoryName}/issues/${issueNumber}`;
-            const response = await axios.patch(
-            url,
-            {
-              body: issueBody,
-            },
-            {
-              headers: {
-                Authorization: `token ${process.env.ACCESS_TOKEN}`,
-              },
-            }
-            );
-            assert.strictEqual(response.status, 200);
-            assert.strictEqual(response.data.number, issueNumber);
-            assert.strictEqual(response.data.title, issueTitle);
-            assert.strictEqual(response.data.body, issueBody);
-    });
+            const issue = {
+                  owner: `${username}`,
+                  repo: `${repository}`,
+                  issue_number: `${issueNumber}`,
+                  body: "Holaaaa",
+                };
+
+                const issuePatchResponse = await axios.patch(
+                  `${urlBase}/repos/${username}/${repository}/issues/${issueNumber}`,
+                  issue,
+                  {
+                    headers: {
+                      Authorization: `token ${process.env.ACCESS_TOKEN}`,
+                    },
+                  }
+                );
+                
+                expect(issuePatchResponse.status).to.equal(StatusCodes.OK);
+
+                const issueGetResponse = await getIssue();
+
+                expect(issueGetResponse.data.title).to.equal(`${issueTitle}`);
+                expect(issueGetResponse.data.body).to.equal(issue.body);
+        });
 
         it('should lock an issue', async function () {
 
