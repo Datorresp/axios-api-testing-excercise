@@ -16,6 +16,7 @@ describe('Github Api Test', function () {
                 Authorization: `token ${process.env.ACCESS_TOKEN}`,
               },
         });
+        accessToken = process.env.ACCESS_TOKEN;
         assert.strictEqual(response.status, 200);
     });
 
